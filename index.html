@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missouri HIV/SUD Policy Model v4.1</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F8FAFC; --bg2:#FFFFFF; --bg3:#F1F5F9;
+  --border:#E2E8F0; --border2:#CBD5E1;
+  --text:#0F172A; --text2:#475569; --text3:#94A3B8;
+  --navy:#1E3A5F; --teal:#0D7A8E;
+  --blue:#2563EB; --coral:#DC2626;
+  --amber:#D97706; --green:#059669;
+  --purple:#7C3AED; --orange:#EA580C;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --radius:8px; --font:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6}
+
+/* HEADER */
+header{background:var(--navy);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.h-title{color:#fff}
+.h-title h1{font-size:17px;font-weight:600;letter-spacing:-.2px}
+.h-title h1 span{color:#60CFDF}
+.h-title p{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
+.h-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.bg-green{background:rgba(5,150,105,.18);color:#34D399;border:1px solid rgba(5,150,105,.3)}
+.bg-blue{background:rgba(96,207,223,.12);color:#60CFDF;border:1px solid rgba(96,207,223,.25)}
+.bg-grey{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.12)}
+
+/* TABS */
+.tab-bar{background:var(--bg2);border-bottom:2px solid var(--border);padding:0 32px;display:flex;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.tab-btn{padding:13px 20px;font-size:13.5px;font-weight:500;color:var(--text2);background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;display:flex;align-items:center;gap:7px}
+.tab-btn:hover{color:var(--navy)}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--teal);font-weight:600}
+.tab-icon{font-size:15px}
+
+/* PANELS */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.page-body{max-width:1320px;margin:0 auto;padding:24px 32px}
+
+/* GRID */
+.row{display:grid;gap:18px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g-sidebar{grid-template-columns:310px 1fr}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-hdr{padding:13px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text2)}
+.card-body{padding:16px 18px}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.kpi-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px}
+.kpi-val{font-size:26px;font-weight:700;color:var(--text);line-height:1.1}
+.kpi-delta{font-size:12px;font-weight:600;margin-top:4px}
+.d-good{color:var(--green)}.d-warn{color:var(--amber)}.d-bad{color:var(--coral)}
+
+/* CHARTS */
+.chart-wrap{position:relative}
+.chart-wrap canvas{display:block}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* LEVERS */
+.lev-grp{margin-bottom:18px}
+.lev-grp-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.lev-grp-title.h{color:var(--blue);border-bottom-color:rgba(37,99,235,.2)}
+.lev-grp-title.s{color:var(--orange);border-bottom-color:rgba(234,88,12,.2)}
+.lev-row{margin-bottom:14px}
+.lev-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.lev-name{font-size:13px;font-weight:500}
+.lev-val{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;min-width:36px;text-align:right}
+.lev-val.hv{color:var(--blue)}.lev-val.sv{color:var(--orange)}
+.lev-sub{font-size:11px;color:var(--text3);margin-bottom:5px}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer}
+input[type=range].hs{background:linear-gradient(to right,var(--blue) var(--pct,0%),#E2E8F0 var(--pct,0%))}
+input[type=range].ss{background:linear-gradient(to right,var(--orange) var(--pct,0%),#E2E8F0 var(--pct,0%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid currentColor;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input[type=range].hs::-webkit-slider-thumb{border-color:var(--blue)}
+input[type=range].ss::-webkit-slider-thumb{border-color:var(--orange)}
+
+/* PRESETS */
+.sc-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.sc-btn{padding:6px 13px;border-radius:6px;font-size:12px;font-weight:500;border:1.5px solid;cursor:pointer;transition:filter .12s}
+.sc-btn:hover{filter:brightness(.94)}
+.sc-base{color:var(--text2);border-color:var(--border2);background:var(--bg3)}
+.sc-hiv{color:var(--blue);border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.06)}
+.sc-sud{color:var(--orange);border-color:rgba(234,88,12,.35);background:rgba(234,88,12,.06)}
+.sc-comb{color:var(--green);border-color:rgba(5,150,105,.35);background:rgba(5,150,105,.06)}
+
+/* TABLES */
+.t{width:100%;border-collapse:collapse;font-size:13px}
+.t th{background:var(--bg3);color:var(--text2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:9px 14px;text-align:right;border-bottom:2px solid var(--border)}
+.t th:first-child{text-align:left}
+.t td{padding:9px 14px;border-bottom:1px solid var(--border);text-align:right}
+.t td:first-child{text-align:left;font-weight:600}
+.t tr:last-child td{border-bottom:none}
+.t tr:hover td{background:var(--bg3)}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.t-base{background:var(--bg3);color:var(--text2)}
+.t-hiv{background:rgba(37,99,235,.1);color:var(--blue)}
+.t-sud{background:rgba(234,88,12,.1);color:var(--orange)}
+.t-comb{background:rgba(5,150,105,.1);color:var(--green)}
+.vg{color:var(--green);font-weight:600}.vw{color:var(--amber);font-weight:600}.vd{color:var(--text3)}
+
+/* PORTFOLIO */
+.pf-intro{background:linear-gradient(135deg,rgba(13,122,142,.07),rgba(37,99,235,.05));border:1px solid rgba(13,122,142,.2);border-radius:var(--radius);padding:16px 20px;margin-bottom:18px}
+.pf-intro h3{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:4px}
+.pf-intro p{font-size:13px;color:var(--text2);line-height:1.6}
+.pf-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.pf-card{border-radius:var(--radius);padding:16px;border:1.5px solid}
+.pf-card.core{background:rgba(5,150,105,.04);border-color:rgba(5,150,105,.3)}
+.pf-card.red{background:rgba(220,38,38,.04);border-color:rgba(220,38,38,.3)}
+.pf-card.amb{background:rgba(234,88,12,.04);border-color:rgba(234,88,12,.3)}
+.pf-card h4{font-size:13px;font-weight:700;margin-bottom:8px}
+.pf-card.core h4{color:var(--green)}
+.pf-card.red h4{color:var(--coral)}
+.pf-card.amb h4{color:var(--orange)}
+.pf-cname{font-size:15px;font-weight:700;margin-bottom:10px}
+.pf-card.core .pf-cname{color:var(--green)}
+.pf-card.red .pf-cname{color:var(--coral)}
+.pf-card.amb .pf-cname{color:var(--orange)}
+.pf-stat{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.pf-stat:last-child{border-bottom:none}
+.pf-stat-v{font-weight:700}
+
+.bt{width:100%;border-collapse:collapse;font-size:13px}
+.bt th{background:var(--navy);color:rgba(255,255,255,.85);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:9px 14px;text-align:center}
+.bt th:first-child,.bt th:nth-child(2){text-align:left}
+.bt td{padding:9px 14px;border-bottom:1px solid var(--border);text-align:center;font-size:12.5px}
+.bt td:first-child{text-align:center;font-weight:700;color:var(--navy)}
+.bt td:nth-child(2){text-align:left;font-size:12px;color:var(--text2)}
+.bt tr:nth-child(even) td{background:var(--bg3)}
+.bt tr:hover td{background:rgba(13,122,142,.07)}
+.bt tr.hl td{background:rgba(5,150,105,.08)}
+.bt tr.hl td:first-child{color:var(--green)}
+.b-inf{display:inline-block;height:8px;border-radius:4px;background:var(--blue);vertical-align:middle;margin-right:4px}
+.b-od{display:inline-block;height:8px;border-radius:4px;background:var(--orange);vertical-align:middle;margin-right:4px}
+
+/* ABOUT */
+.ab-section{margin-bottom:24px}
+.ab-section h3{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--teal)}
+.ab-section p,.ab-section li{font-size:13px;color:var(--text2);line-height:1.7}
+.ab-section ul{padding-left:18px}
+.pt{width:100%;border-collapse:collapse;font-size:12.5px}
+.pt th{background:var(--bg3);color:var(--text2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;text-align:left;border-bottom:2px solid var(--border)}
+.pt td{padding:7px 12px;border-bottom:1px solid var(--border)}
+.pt tr:last-child td{border-bottom:none}
+.p-nls{color:var(--teal);font-weight:600}
+
+/* MISC */
+.mt{margin-top:18px}
+.sec-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:12px;margin-top:4px;display:flex;align-items:center;gap:8px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.reset-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);cursor:pointer}
+.reset-btn:hover{background:var(--border)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-title">
+    <h1>Missouri HIV/SUD Policy Simulation <span>v4.1</span></h1>
+    <p>Systems dynamics · NLS-fitted CDC AtlasPlus 2013–2022 · Missouri 2022 initial conditions · T = 120 months</p>
+  </div>
+  <div class="h-badges">
+    <span class="badge bg-green">● Live</span>
+    <span class="badge bg-blue">β=0.00672 · dx=0.0214/mo · link=0.1134/mo</span>
+    <span class="badge bg-grey">emmanuel.tetteh@wustl.edu</span>
+  </div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('sim',this)"><span class="tab-icon">🎚</span>Simulation</button>
+  <button class="tab-btn" onclick="switchTab('sc',this)"><span class="tab-icon">📊</span>Scenario Comparison</button>
+  <button class="tab-btn" onclick="switchTab('pf',this)"><span class="tab-icon">🎯</span>Optimal Portfolios</button>
+  <button class="tab-btn" onclick="switchTab('ab',this)"><span class="tab-icon">📋</span>Model &amp; Methods</button>
+</div>
+
+<!-- ══ TAB 1 — SIMULATION ══ -->
+<div id="tab-sim" class="tab-panel active">
+<div class="page-body">
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-lbl">Annual New Infections</div><div class="kpi-val" id="k-inf">—</div><div class="kpi-delta" id="k-inf-d"></div></div>
+    <div class="kpi"><div class="kpi-lbl">Viral Suppression</div><div class="kpi-val" id="k-sup">—</div><div class="kpi-delta" id="k-sup-d"></div></div>
+    <div class="kpi"><div class="kpi-lbl">OD Deaths / Year</div><div class="kpi-val" id="k-od">—</div><div class="kpi-delta" id="k-od-d"></div></div>
+    <div class="kpi"><div class="kpi-lbl">Cumulative OD Deaths (10yr)</div><div class="kpi-val" id="k-cum">—</div><div class="kpi-delta" id="k-cum-d"></div></div>
+  </div>
+  <div class="row g-sidebar">
+    <!-- Levers -->
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Policy Levers</span><button class="reset-btn" onclick="resetL()">Reset</button></div>
+      <div class="card-body">
+        <div class="sec-lbl">Quick presets</div>
+        <div class="sc-btns">
+          <button class="sc-btn sc-base" onclick="setP('baseline')">Baseline</button>
+          <button class="sc-btn sc-hiv"  onclick="setP('hiv')">HIV-only</button>
+          <button class="sc-btn sc-sud"  onclick="setP('sud')">SUD/HR-only</button>
+          <button class="sc-btn sc-comb" onclick="setP('combined')">Combined (all 8)</button>
+        </div>
+        <div class="lev-grp"><div class="lev-grp-title h">HIV-specific</div><div id="lev-h"></div></div>
+        <div class="lev-grp"><div class="lev-grp-title s">SUD / Harm Reduction</div><div id="lev-s"></div></div>
+      </div>
+    </div>
+    <!-- Charts -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="row g2">
+        <div class="card"><div class="card-hdr"><span class="card-title">Annual New HIV Infections</span></div><div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="c-inf"></canvas></div><div class="legend"><span class="leg"><span class="leg-dot" style="background:#CBD5E1"></span>Baseline</span><span class="leg"><span class="leg-dot" style="background:var(--coral)"></span>Current</span></div></div></div>
+        <div class="card"><div class="card-hdr"><span class="card-title">Viral Suppression &amp; Cascade %</span></div><div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="c-props"></canvas></div><div class="legend"><span class="leg"><span class="leg-dot" style="background:var(--purple)"></span>% Diagnosed</span><span class="leg"><span class="leg-dot" style="background:var(--teal)"></span>% Suppressed</span></div></div></div>
+      </div>
+      <div class="row g2">
+        <div class="card"><div class="card-hdr"><span class="card-title">Care Cascade Stocks</span></div><div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="c-casc"></canvas></div><div class="legend"><span class="leg"><span class="leg-dot" style="background:var(--blue)"></span>Undiag.</span><span class="leg"><span class="leg-dot" style="background:var(--coral)"></span>Dx/no care</span><span class="leg"><span class="leg-dot" style="background:var(--amber)"></span>In care/unsuppressed</span><span class="leg"><span class="leg-dot" style="background:var(--green)"></span>Suppressed</span></div></div></div>
+        <div class="card"><div class="card-hdr"><span class="card-title">Annual OD Deaths (PLHIV)</span></div><div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="c-od"></canvas></div><div class="legend"><span class="leg"><span class="leg-dot" style="background:#CBD5E1"></span>Baseline</span><span class="leg"><span class="leg-dot" style="background:var(--amber)"></span>Current</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ══ TAB 2 — SCENARIOS ══ -->
+<div id="tab-sc" class="tab-panel">
+<div class="page-body">
+  <div class="pf-intro"><h3>Four Pre-Specified Scenarios at Maximum Coverage (Ceiling Estimates)</h3><p>All levers within each strategy set to 1.0. Values are central model estimates. 90% credible intervals from N=2,000 PSA are in the manuscript (Table 1).</p></div>
+  <div class="row g2">
+    <div class="card"><div class="card-hdr"><span class="card-title">Annual New HIV Infections</span></div><div class="card-body"><div class="chart-wrap" style="height:260px"><canvas id="sc-inf"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><span class="card-title">Annual OD Deaths (PLHIV)</span></div><div class="card-body"><div class="chart-wrap" style="height:260px"><canvas id="sc-od"></canvas></div></div></div>
+  </div>
+  <div class="card mt"><div class="card-hdr"><span class="card-title">10-Year Outcome Table — Month 120, Central Estimates</span></div>
+    <div class="card-body" style="padding:0"><table class="t"><thead><tr><th>Scenario</th><th style="text-align:right">Annual Infections</th><th style="text-align:right">Viral Suppression</th><th style="text-align:right">Cum. OD Deaths</th><th style="text-align:right">Infection Reduction</th><th style="text-align:right">OD Reduction</th></tr></thead><tbody id="sc-tbl"></tbody></table></div>
+  </div>
+</div></div>
+
+<!-- ══ TAB 3 — PORTFOLIOS ══ -->
+<div id="tab-pf" class="tab-panel">
+<div class="page-body">
+  <div class="pf-intro"><h3>Optimal Intervention Portfolios — All 255 Combinations of 8 Levers</h3><p>Every non-empty subset of the 8 policy levers evaluated at full coverage. <strong>Key finding:</strong> PrEP + MOUD + OEND (3 levers) captures the full 79% overdose mortality reduction. Every additional lever improves HIV outcomes only — the OD ceiling is flat from 3 levers onward.</p></div>
+  <div class="pf-cards">
+    <div class="pf-card core">
+      <h4>⭐ Minimum Integrated Package</h4>
+      <div class="pf-cname">PrEP + MOUD + OEND</div>
+      <div class="pf-stat"><span>HIV infection reduction</span><span class="pf-stat-v" style="color:var(--blue)">87%</span></div>
+      <div class="pf-stat"><span>OD death reduction</span><span class="pf-stat-v" style="color:var(--orange)">79%</span></div>
+      <div class="pf-stat"><span>Budget level</span><span class="pf-stat-v">3 levers</span></div>
+      <div class="pf-stat" style="font-size:11px;color:var(--text3)"><span>Same OD outcome as all 8 levers combined</span></div>
+    </div>
+    <div class="pf-card red">
+      <h4>Best Single Lever — HIV</h4>
+      <div class="pf-cname">PrEP</div>
+      <div class="pf-stat"><span>HIV infection reduction</span><span class="pf-stat-v" style="color:var(--blue)">76%</span></div>
+      <div class="pf-stat"><span>OD death reduction</span><span class="pf-stat-v" style="color:var(--text3)">14%</span></div>
+      <div class="pf-stat"><span>Mechanism</span><span class="pf-stat-v" style="font-size:11px">Direct β reduction</span></div>
+      <div class="pf-stat" style="font-size:11px;color:var(--text3)"><span>Bypasses care cascade entirely</span></div>
+    </div>
+    <div class="pf-card amb">
+      <h4>Best Single Lever — OD</h4>
+      <div class="pf-cname">OEND / Naloxone</div>
+      <div class="pf-stat"><span>HIV infection reduction</span><span class="pf-stat-v" style="color:var(--text3)">0%</span></div>
+      <div class="pf-stat"><span>OD death reduction</span><span class="pf-stat-v" style="color:var(--orange)">61%</span></div>
+      <div class="pf-stat"><span>Mechanism</span><span class="pf-stat-v" style="font-size:11px">Fatality prob. only</span></div>
+      <div class="pf-stat" style="font-size:11px;color:var(--text3)"><span>Zero HIV cascade effect</span></div>
+    </div>
+  </div>
+  <div class="row g2">
+    <div class="card"><div class="card-hdr"><span class="card-title">Efficient Frontier — All 255 Combinations</span></div><div class="card-body"><div class="chart-wrap" style="height:300px"><canvas id="pf-sc"></canvas></div><div class="legend mt" style="margin-top:8px"><span class="leg"><span class="leg-dot" style="background:#CCCCCC"></span>1</span><span class="leg"><span class="leg-dot" style="background:#93C5FD"></span>2</span><span class="leg"><span class="leg-dot" style="background:var(--teal)"></span>3</span><span class="leg"><span class="leg-dot" style="background:var(--amber)"></span>4–5</span><span class="leg"><span class="leg-dot" style="background:var(--coral)"></span>6–8 levers</span></div></div></div>
+    <div class="card"><div class="card-hdr"><span class="card-title">Marginal Return — Adding to PrEP+MOUD+OEND</span></div><div class="card-body"><div class="chart-wrap" style="height:300px"><canvas id="pf-marg"></canvas></div><div class="legend mt" style="margin-top:8px"><span class="leg"><span class="leg-dot" style="background:var(--blue)"></span>HIV gain (pp)</span><span class="leg"><span class="leg-dot" style="background:var(--orange)"></span>OD gain (pp)</span></div></div></div>
+  </div>
+  <div class="card mt"><div class="card-hdr"><span class="card-title">Best Portfolio at Each Budget Level</span></div>
+    <div class="card-body" style="padding:0"><table class="bt"><thead><tr><th>N</th><th>Best Combination</th><th>HIV ↓</th><th>OD ↓</th><th>Visual</th></tr></thead><tbody id="bt-body"></tbody></table></div>
+  </div>
+</div></div>
+
+<!-- ══ TAB 4 — ABOUT ══ -->
+<div id="tab-ab" class="tab-panel">
+<div class="page-body">
+  <div class="row g2">
+    <div>
+      <div class="ab-section"><h3>Model Overview</h3><p>Deterministic compartmental system dynamics model (Stella Architect v1.9.5, Euler integration, Δt=1 month, T=120 months). Four HIV care cascade stocks: Undiagnosed, Diagnosed Not in Care, In Care Not Suppressed, Virally Suppressed. SUD enters through three pathways: transmission amplification, care instability, and overdose mortality.</p></div>
+      <div class="ab-section"><h3>Initial Conditions — Missouri 2022 (CDC AtlasPlus)</h3><ul><li>Total modeled PLHIV: <strong>15,322</strong></li><li>Undiagnosed: 2,145 (~14% of total)</li><li>Diagnosed, not in care: 3,057</li><li>In care, not suppressed: 1,542</li><li>Virally suppressed: 8,578 (65.1% of diagnosed)</li></ul></div>
+      <div class="ab-section"><h3>NLS Calibration</h3><p>β, dx_rate, linkage_rate fitted to CDC AtlasPlus MO 2013–2022 (n=9, excluding 2020) using L-BFGS-B NLS. 95% CIs via parametric bootstrap (500 resamplings).</p><ul style="margin-top:8px"><li>RMSE (diagnoses): <strong>25/year</strong> (mean bias −8)</li><li>RMSE (suppression): <strong>1.7 pp</strong></li></ul></div>
+    </div>
+    <div>
+      <div class="ab-section"><h3>Key Parameters</h3>
+        <table class="pt"><thead><tr><th>Parameter</th><th>Value</th><th>95% CI</th><th>Source</th></tr></thead><tbody>
+          <tr><td>β (Beta_Base)</td><td class="p-nls">0.00672/mo</td><td>0.0064–0.0070</td><td>NLS fitted</td></tr>
+          <tr><td>dx_rate</td><td class="p-nls">0.0214/mo</td><td>0.0193–0.0237</td><td>NLS fitted</td></tr>
+          <tr><td>linkage_rate</td><td class="p-nls">0.1134/mo</td><td>0.1009–0.1258</td><td>NLS fitted</td></tr>
+          <tr><td>suppression_rate</td><td>0.10/mo</td><td>0.07–0.14</td><td>Cohen 2011</td></tr>
+          <tr><td>SUD_Risk index</td><td>0.30</td><td>0.20–0.40</td><td>Assumed</td></tr>
+          <tr><td>MOUD OD reduction</td><td>0.40</td><td>0.25–0.55</td><td>Wakeman 2020</td></tr>
+          <tr><td>OEND fatality reduction</td><td>0.60</td><td>0.40–0.75</td><td>Walley 2013</td></tr>
+          <tr><td>SSP transmission reduction</td><td>0.30</td><td>0.15–0.45</td><td>Aspinall 2014</td></tr>
+          <tr><td>PrEP efficacy</td><td>0.60</td><td>0.44–0.75</td><td>Grant 2010</td></tr>
+        </tbody></table>
+      </div>
+      <div class="ab-section"><h3>Selected References</h3><ul style="columns:2;column-gap:20px">
+        <li>Hall HI et al. PLoS One 2013</li><li>Cohen MS et al. NEJM 2011</li>
+        <li>Mugavero MJ et al. JAIDS 2012</li><li>Wakeman SE et al. JAMA Netw Open 2020</li>
+        <li>Aspinall EJ et al. Int J Epidemiol 2014</li><li>Walley AY et al. BMJ 2013</li>
+        <li>Grant RM et al. NEJM 2010</li><li>Pinkerton SD. AIDS Behav 2008</li>
+        <li>CDC AtlasPlus MO 2013–2022</li><li>Sterman JD. 2000</li>
+      </ul></div>
+    </div>
+  </div>
+</div></div>
+
+<script>
+/* ═══ MODEL PARAMS ═══ */
+const P={
+  dx_rate:0.0214,linkage_rate:0.1134,suppression_rate:0.10,
+  dropout_ns_rate:0.030,dropout_s_rate:0.010,loss_supp_rate:0.010,
+  mort_undx:0.005,mort_dx:0.007,mort_ns:0.009,mort_s:0.002,
+  Beta_Base:0.00672,SUD_Risk:0.3,
+  dx_boost_max:0.5,HR_dx_boost:0.1,link_boost_max:0.6,HR_link_boost:0.15,
+  drop_red_max:0.5,HR_drop_red:0.3,PrEP_eff_max:0.6,HR_trans_red:0.4,
+  SSP_risk_red:0.3,MOUD_risk_red:0.2,MOUD_churn_red:0.5,PeerNav_churn_red:0.2,PeerNav_engage:0.2,
+  OD_event_rate:0.015,OD_fat_prob:0.05,MOUD_OD_red:0.4,OEND_fat_red:0.6,
+  S0_undx:2145,S0_dx:3057,S0_ic:1542,S0_supp:8578,T:120,DT:1
+};
+function sim(L){
+  const t=L.POL_TestingScale||0,lk=L.POL_RapidLinkageNav||0,
+        rt=L.POL_RetentionSupport||0,pr=L.POL_PrEPScale||0,
+        mo=L.MOUD_coverage||0,ss=L.SSP_coverage||0,
+        oe=L.OEND_coverage||0,pn=L.PeerNav_coverage||0;
+  const rr=1-(1-P.SSP_risk_red*ss)*(1-P.MOUD_risk_red*mo);
+  const cs=1-(1-P.MOUD_churn_red*mo)*(1-P.PeerNav_churn_red*pn);
+  const en=P.PeerNav_engage*pn,hr=0.25*(mo+ss+oe+pn);
+  const sT=Math.max(0.1,1+P.SUD_Risk-rr),sD=Math.max(0.2,1+P.SUD_Risk-cs);
+  const dxE=P.dx_rate*(1+P.dx_boost_max*t)*(1+P.HR_dx_boost*en);
+  const lkE=P.linkage_rate*(1+P.link_boost_max*lk)*(1+P.HR_link_boost*en);
+  const dnE=P.dropout_ns_rate*sD*(1-P.drop_red_max*rt)*(1-P.HR_drop_red*hr);
+  const dsE=P.dropout_s_rate*(1+sD*P.SUD_Risk)*(1-P.drop_red_max*rt)*(1-P.HR_drop_red*hr);
+  const lsE=P.loss_supp_rate*sD*(1-P.drop_red_max*rt)*(1-P.HR_drop_red*hr);
+  const bE=P.Beta_Base*(1+sT*P.SUD_Risk)*(1-P.PrEP_eff_max*pr)*(1-P.HR_trans_red*hr);
+  const or_=P.OD_event_rate*(1-P.MOUD_OD_red*mo)*P.OD_fat_prob*(1-P.OEND_fat_red*oe)*P.SUD_Risk;
+  let u=P.S0_undx,d=P.S0_dx,ic=P.S0_ic,s=P.S0_supp;
+  const o={undx:[],dx:[],ic:[],supp:[],ainf:[],pdx:[],psupp:[],odAnn:[],cumOD:0};
+  for(let i=0;i<=P.T;i++){
+    const pool=u+d+ic,tot=pool+s,dxt=tot-u;
+    o.undx.push(u);o.dx.push(d);o.ic.push(ic);o.supp.push(s);
+    o.ainf.push(bE*pool*12);o.pdx.push(dxt/tot);o.psupp.push(s/Math.max(dxt,1));
+    o.odAnn.push(or_*tot*12);o.cumOD+=or_*tot;
+    const ni=bE*pool,di=dxE*u,li=lkE*d,sp=P.suppression_rate*ic,
+          ls=lsE*s,dn=dnE*ic,ds=dsE*s;
+    u=Math.max(0,u+(ni-di-P.mort_undx*u-or_*u));
+    d=Math.max(0,d+(di+dn+ds-li-P.mort_dx*d-or_*d));
+    ic=Math.max(0,ic+(li+ls-sp-dn-P.mort_ns*ic-or_*ic));
+    s=Math.max(0,s+(sp-ls-ds-P.mort_s*s));
+  }
+  return o;
+}
+
+/* ═══ LEVER CONFIG ═══ */
+const HL=[
+  {id:'POL_TestingScale',name:'HIV Testing Scale-Up',sub:'↑ Diagnosis rate +50%'},
+  {id:'POL_RapidLinkageNav',name:'Rapid Linkage Navigation',sub:'↑ Linkage rate +60%'},
+  {id:'POL_RetentionSupport',name:'Retention Support',sub:'↓ Dropout rates −50%'},
+  {id:'POL_PrEPScale',name:'PrEP Scale-Up',sub:'↓ Transmission −60%'},
+];
+const SL=[
+  {id:'MOUD_coverage',name:'MOUD Coverage',sub:'OD −40% · care −50% · trans −20%'},
+  {id:'SSP_coverage',name:'Syringe Services (SSP)',sub:'Transmission risk −30%'},
+  {id:'OEND_coverage',name:'Naloxone / OEND',sub:'OD fatality −60%'},
+  {id:'PeerNav_coverage',name:'Peer Navigation',sub:'Dx/linkage boost + care stability'},
+];
+
+function buildLevers(){
+  function row(l,cls,sc){
+    return`<div class="lev-row">
+      <div class="lev-top"><span class="lev-name">${l.name}</span><span class="lev-val ${cls}" id="v-${l.id}">0%</span></div>
+      <div class="lev-sub">${l.sub}</div>
+      <input type="range" class="${sc}" id="${l.id}" min="0" max="1" step="0.01" value="0"
+        oninput="onSl('${l.id}','${cls}')">
+    </div>`;
+  }
+  document.getElementById('lev-h').innerHTML=HL.map(l=>row(l,'hv','hs')).join('');
+  document.getElementById('lev-s').innerHTML=SL.map(l=>row(l,'sv','ss')).join('');
+}
+function onSl(id,cls){
+  const v=+document.getElementById(id).value;
+  document.getElementById('v-'+id).textContent=Math.round(v*100)+'%';
+  document.getElementById(id).style.setProperty('--pct',(v*100)+'%');
+  updateSim();
+}
+function getL(){
+  const L={};
+  [...HL,...SL].forEach(l=>{L[l.id]=+document.getElementById(l.id).value;});
+  return L;
+}
+function setL(vals){
+  [...HL,...SL].forEach(l=>{
+    const v=vals[l.id]||0, el=document.getElementById(l.id);
+    el.value=v; el.style.setProperty('--pct',(v*100)+'%');
+    document.getElementById('v-'+l.id).textContent=Math.round(v*100)+'%';
+  });
+  updateSim();
+}
+function resetL(){setL({});}
+const PRES={
+  baseline:{},
+  hiv:{POL_TestingScale:1,POL_RapidLinkageNav:1,POL_RetentionSupport:1,POL_PrEPScale:1},
+  sud:{MOUD_coverage:1,SSP_coverage:1,OEND_coverage:1,PeerNav_coverage:1},
+  combined:{POL_TestingScale:1,POL_RapidLinkageNav:1,POL_RetentionSupport:1,POL_PrEPScale:1,
+            MOUD_coverage:1,SSP_coverage:1,OEND_coverage:1,PeerNav_coverage:1},
+};
+function setP(n){setL(PRES[n]);}
+
+/* ═══ CHART HELPERS ═══ */
+const BL=sim({});
+const MOS=Array.from({length:P.T+1},(_,i)=>i);
+const GC='rgba(226,232,240,0.8)',TC='#94A3B8';
+const CO={
+  responsive:true,maintainAspectRatio:false,animation:{duration:110},
+  plugins:{legend:{display:false},tooltip:{
+    backgroundColor:'#fff',borderColor:'#E2E8F0',borderWidth:1,
+    titleColor:'#0F172A',bodyColor:'#475569',
+    callbacks:{title:c=>`Month ${c[0].label}`}
+  }},
+  scales:{
+    x:{grid:{color:GC},ticks:{color:TC,font:{size:10},maxTicksLimit:10},border:{color:'#E2E8F0'}},
+    y:{grid:{color:GC},ticks:{color:TC,font:{size:10},maxTicksLimit:6},border:{color:'#E2E8F0'}}
+  }
+};
+function ds(data,col,dash=false,lw=2){
+  return{data,borderColor:col,backgroundColor:'transparent',
+         borderWidth:lw,borderDash:dash?[5,4]:[],pointRadius:0,pointHoverRadius:3,tension:0.3};
+}
+
+/* ═══ TAB 1 CHARTS ═══ */
+const cInf=new Chart(document.getElementById('c-inf'),{type:'line',data:{labels:MOS,datasets:[ds(BL.ainf,'#CBD5E1',true,1.5),ds(BL.ainf,'#DC2626')]},options:CO});
+const cProps=new Chart(document.getElementById('c-props'),{type:'line',data:{labels:MOS,datasets:[ds(BL.pdx.map(v=>v*100),'#7C3AED'),ds(BL.psupp.map(v=>v*100),'#0D7A8E'),{data:Array(P.T+1).fill(90),borderColor:'rgba(148,163,184,.4)',borderWidth:1,borderDash:[6,4],pointRadius:0,backgroundColor:'transparent'}]},options:{...CO,scales:{...CO.scales,y:{...CO.scales.y,min:0,max:105,ticks:{...CO.scales.y.ticks,callback:v=>v+'%'}}}}});
+const cCasc=new Chart(document.getElementById('c-casc'),{type:'line',data:{labels:MOS,datasets:[ds(BL.undx,'#2563EB'),ds(BL.dx,'#DC2626'),ds(BL.ic,'#D97706'),ds(BL.supp,'#059669')]},options:{...CO,scales:{...CO.scales,y:{...CO.scales.y,ticks:{...CO.scales.y.ticks,callback:v=>v>=1000?(v/1000).toFixed(1)+'k':v}}}}});
+const cOD=new Chart(document.getElementById('c-od'),{type:'line',data:{labels:MOS,datasets:[ds(BL.odAnn,'#CBD5E1',true,1.5),ds(BL.odAnn,'#D97706')]},options:CO});
+
+function updateSim(){
+  const L=getL(),R=sim(L),t=P.T;
+  const bi=BL.ainf[t],bs=BL.psupp[t],bo=BL.odAnn[t],bc=BL.cumOD;
+  const ri=R.ainf[t],rs=R.psupp[t],ro=R.odAnn[t],rc=R.cumOD;
+
+  document.getElementById('k-inf').textContent=Math.round(ri).toLocaleString();
+  document.getElementById('k-sup').textContent=(rs*100).toFixed(1)+'%';
+  document.getElementById('k-od').textContent=Math.round(ro).toLocaleString();
+  document.getElementById('k-cum').textContent=Math.round(rc).toLocaleString();
+
+  function setDelta(id,pct,flip=false){
+    const el=document.getElementById(id);
+    if(pct>1){el.textContent=(flip?'↑ +':' ↓ ')+pct.toFixed(0)+'% vs baseline'; el.className='kpi-delta '+(pct>30?'d-good':pct>5?'d-warn':'');}
+    else{el.textContent='Baseline';el.className='kpi-delta';}
+  }
+  function setDeltaAbs(id,diff){
+    const el=document.getElementById(id);
+    if(diff>0.5){el.textContent='↑ +'+diff.toFixed(1)+'pp vs baseline';el.className='kpi-delta '+(diff>10?'d-good':diff>3?'d-warn':'');}
+    else{el.textContent='Baseline';el.className='kpi-delta';}
+  }
+  setDelta('k-inf-d',(1-ri/bi)*100);
+  setDeltaAbs('k-sup-d',(rs-bs)*100);
+  setDelta('k-od-d',(1-ro/bo)*100);
+  setDelta('k-cum-d',(1-rc/bc)*100);
+
+  cInf.data.datasets[1].data=R.ainf;cInf.update();
+  cProps.data.datasets[0].data=R.pdx.map(v=>v*100);
+  cProps.data.datasets[1].data=R.psupp.map(v=>v*100);cProps.update();
+  cCasc.data.datasets[0].data=R.undx;cCasc.data.datasets[1].data=R.dx;
+  cCasc.data.datasets[2].data=R.ic;cCasc.data.datasets[3].data=R.supp;cCasc.update();
+  cOD.data.datasets[1].data=R.odAnn;cOD.update();
+}
+
+/* ═══ TAB 2 — SCENARIOS ═══ */
+const SC=[
+  {name:'Baseline',L:{},col:'#94A3B8',dash:true,tag:'t-base'},
+  {name:'HIV-only',L:PRES.hiv,col:'#2563EB',dash:false,tag:'t-hiv'},
+  {name:'SUD/HR-only',L:PRES.sud,col:'#EA580C',dash:false,tag:'t-sud'},
+  {name:'Combined',L:PRES.combined,col:'#059669',dash:false,tag:'t-comb'},
+];
+const SR=SC.map(s=>({...s,R:sim(s.L)}));
+const cSI=new Chart(document.getElementById('sc-inf'),{type:'line',data:{labels:MOS,datasets:SR.map(s=>({label:s.name,data:s.R.ainf,borderColor:s.col,backgroundColor:'transparent',borderWidth:2,borderDash:s.dash?[5,4]:[],pointRadius:0,tension:0.3}))},options:{...CO,plugins:{...CO.plugins,legend:{display:true,position:'top',labels:{boxWidth:12,font:{size:12},color:'#475569'}}}}});
+const cSO=new Chart(document.getElementById('sc-od'),{type:'line',data:{labels:MOS,datasets:SR.map(s=>({label:s.name,data:s.R.odAnn,borderColor:s.col,backgroundColor:'transparent',borderWidth:2,borderDash:s.dash?[5,4]:[],pointRadius:0,tension:0.3}))},options:{...CO,plugins:{...CO.plugins,legend:{display:true,position:'top',labels:{boxWidth:12,font:{size:12},color:'#475569'}}}}});
+const bR0=SR[0].R;
+document.getElementById('sc-tbl').innerHTML=SR.map((s,i)=>{
+  const r=s.R,t=P.T,ir=i>0?((1-r.ainf[t]/bR0.ainf[t])*100).toFixed(0):null,
+        or_=i>0?((1-r.cumOD/bR0.cumOD)*100).toFixed(0):null;
+  return`<tr><td><span class="tag ${s.tag}">${s.name}</span></td><td>${Math.round(r.ainf[t]).toLocaleString()}</td><td>${(r.psupp[t]*100).toFixed(1)}%</td><td>${Math.round(r.cumOD).toLocaleString()}</td><td class="${ir>50?'vg':ir>20?'vw':'vd'}">${ir?ir+'%':'—'}</td><td class="${or_>50?'vg':or_>20?'vw':'vd'}">${or_?or_+'%':'—'}</td></tr>`;
+}).join('');
+
+/* ═══ TAB 3 — PORTFOLIOS ═══ */
+const IDS=['POL_TestingScale','POL_RapidLinkageNav','POL_RetentionSupport','POL_PrEPScale','MOUD_coverage','SSP_coverage','OEND_coverage','PeerNav_coverage'];
+const NAMES=['Testing','Linkage','Retention','PrEP','MOUD','SSP','OEND','PeerNav'];
+function combos(n){const r=[];for(let m=1;m<(1<<n);m++){const c=[];for(let i=0;i<n;i++)if(m>>i&1)c.push(i);r.push(c);}return r;}
+const ALL=combos(8);
+const BI=BL.ainf[P.T],BO=BL.cumOD;
+const PD=ALL.map(c=>{
+  const L={};c.forEach(i=>{L[IDS[i]]=1;});
+  const R=sim(L);
+  const ir=(1-R.ainf[P.T]/BI)*100,or_=(1-R.cumOD/BO)*100;
+  return{n:c.length,names:c.map(i=>NAMES[i]).join('+'),ir,or_,comp:(ir+or_)/2};
+});
+const CM={1:'#CCCCCC',2:'#93C5FD',3:'#0D7A8E',4:'#D97706',5:'#EA580C',6:'#DC2626',7:'#9F1239',8:'#1E3A5F'};
+const cPFsc=new Chart(document.getElementById('pf-sc'),{
+  type:'scatter',
+  data:{datasets:[
+    ...[1,2,3,4,5,6,7,8].map(n=>({label:`${n} lever${n>1?'s':''}`,data:PD.filter(p=>p.n===n).map(p=>({x:p.ir,y:p.or_})),backgroundColor:CM[n]+'BB',pointRadius:n<=2?4:n<=4?5:6,pointHoverRadius:7})),
+    {type:'line',label:'OD ceiling 79%',data:[{x:0,y:79},{x:100,y:79}],borderColor:'#EA580C',borderWidth:1.5,borderDash:[5,3],backgroundColor:'transparent',pointRadius:0}
+  ]},
+  options:{...CO,plugins:{...CO.plugins,legend:{display:false},tooltip:{...CO.plugins.tooltip,callbacks:{title:c=>`${c[0].dataset.label}`,label:c=>`HIV↓ ${c.raw.x.toFixed(0)}%  OD↓ ${c.raw.y.toFixed(0)}%`}}},scales:{x:{...CO.scales.x,title:{display:true,text:'HIV infection reduction (%)',color:'#475569'},min:0,max:100},y:{...CO.scales.y,title:{display:true,text:'OD death reduction (%)',color:'#475569'},min:-5,max:95}}}
+});
+// Marginal
+const C3={POL_PrEPScale:1,MOUD_coverage:1,OEND_coverage:1};
+const C3R=sim(C3),C3I=(1-C3R.ainf[P.T]/BI)*100,C3O=(1-C3R.cumOD/BO)*100;
+const ADD_IDS=['POL_TestingScale','POL_RapidLinkageNav','POL_RetentionSupport','SSP_coverage','PeerNav_coverage'];
+const ADD_NAMES=['Testing','Linkage','Retention','SSP','PeerNav'];
+const mI=[],mO=[];
+ADD_IDS.forEach(id=>{const L={...C3,[id]:1},R=sim(L);mI.push(((1-R.ainf[P.T]/BI)*100)-C3I);mO.push(((1-R.cumOD/BO)*100)-C3O);});
+new Chart(document.getElementById('pf-marg'),{type:'bar',data:{labels:ADD_NAMES,datasets:[{label:'HIV gain (pp)',data:mI,backgroundColor:'#3B82F680',borderColor:'#2563EB',borderWidth:1.5},{label:'OD gain (pp)',data:mO,backgroundColor:'#F9731680',borderColor:'#EA580C',borderWidth:1.5}]},options:{...CO,plugins:{...CO.plugins,legend:{display:true,position:'top',labels:{boxWidth:12,font:{size:12},color:'#475569'}}},scales:{x:{...CO.scales.x,title:{display:true,text:'Lever added to PrEP+MOUD+OEND',color:'#475569'}},y:{...CO.scales.y,title:{display:true,text:'Percentage points gained',color:'#475569'},min:0}}}});
+// Budget table
+const BT=document.getElementById('bt-body');
+for(let n=1;n<=8;n++){
+  const best=PD.filter(p=>p.n===n).sort((a,b)=>b.comp-a.comp)[0];
+  const hl=n===3;
+  BT.innerHTML+=`<tr class="${hl?'hl':''}"><td>${n}${hl?' ⭐':''}</td><td>${best.names.replace(/\+/g,' + ')}</td><td><strong>${best.ir.toFixed(0)}%</strong></td><td><strong>${best.or_.toFixed(0)}%</strong></td><td><span class="b-inf" style="width:${best.ir*.6}px"></span><span class="b-od" style="width:${best.or_*.6}px"></span></td></tr>`;
+}
+
+/* ═══ TAB SWITCH ═══ */
+const ALL_CHARTS=[cInf,cProps,cCasc,cOD,cSI,cSO,cPFsc];
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  setTimeout(()=>ALL_CHARTS.forEach(c=>{try{c.resize();}catch(e){}}),60);
+}
+
+/* ═══ INIT ═══ */
+buildLevers();
+updateSim();
+</script>
+</body>
+</html>
